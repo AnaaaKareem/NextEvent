@@ -52,7 +52,7 @@ CREATE TABLE ANALYST (
 CREATE TABLE CHECK_IN_STAFF (
     staff_id INT PRIMARY KEY,
     user_id INT,
-    manager INT
+    manager INT,
     FOREIGN KEY (user_id) REFERENCES USER(user_id),
     FOREIGN KEY (manager) REFERENCES MANAGER(manager_id)
 );
@@ -88,7 +88,7 @@ CREATE TABLE TICKETS (
 CREATE TABLE BASKET (
     basket_id INT PRIMARY KEY,
     attendee INT,
-    total_price REAL
+    total_price REAL,
     FOREIGN KEY (attendee) REFERENCES ATTENDEES(user_id)
 );
 
@@ -98,8 +98,8 @@ CREATE TABLE TICKET_BASKET (
     seat_number INT,
     basket INT,
     quantity INT,
-    time_added TIME
-    status VARCHAR(50)
+    time_added TIME,
+    status VARCHAR(50),
     FOREIGN KEY (basket) REFERENCES BASKET(basket_id),
     FOREIGN KEY (ticket) REFERENCES TICKETS(ticket_id),
     FOREIGN KEY (seat_row, seat_number) REFERENCES SEATS(row, seat_number)
@@ -113,8 +113,8 @@ CREATE TABLE ITINERARIES (
     guests INT,
     date DATE,
     start_time TIME,
-    end_time TIME
-    total_seats INT
+    end_time TIME,
+    total_seats INT,
     FOREIGN KEY (event) REFERENCES EVENTS(event_id)
 );
 
@@ -122,15 +122,16 @@ CREATE TABLE VENUE (
     venue_id INT PRIMARY KEY,
     itinerary INT,
     venue_location VARCHAR(25),
-    capacity INT
+    capacity INT,
     FOREIGN KEY (itinerary) REFERENCES ITINERARIES(itineraries_id)
 );
 
 CREATE TABLE SEATS (
-    row INT PRIMARY KEY,
-    seat_number INT PRIMARY KEY,
+    row INT,
+    seat_number INT,
     venue INT,
-    availability BOOLEAN
+    availability BOOLEAN,
+    PRIMARY KEY (row, seat_number),
     FOREIGN KEY (venue) REFERENCES VENUE(venue_id)
 );
 
@@ -139,7 +140,7 @@ CREATE TABLE FEEDBACK (
     itinerary INT,
     attendee INT,
     rating INT,
-    comment VARCHAR(150)
+    comment VARCHAR(150),
     FOREIGN KEY (itinerary) REFERENCES ITINERARIES(itineraries_id),
     FOREIGN KEY (attendee) REFERENCES ATTENDEES(user_id)
 );
@@ -147,7 +148,7 @@ CREATE TABLE FEEDBACK (
 CREATE TABLE CREATE_TICKETS (
     vendor INT,
     event INT,
-    ticket INT
+    ticket INT,
     FOREIGN KEY (vendor) REFERENCES VENDOR(vendor_id),
     FOREIGN KEY (event) REFERENCES EVENTS(event_id),
     FOREIGN KEY (ticket) REFERENCES TICKETS(ticket_id)
@@ -171,19 +172,19 @@ CREATE TABLE PAYMENTS (
 );
 
 CREATE TABLE GENERATES ( 
-    order INT,
+    order_id INT,
     seat_row VARCHAR(2),
     seat_number INT,
-    FOREIGN KEY (order) REFERENCES ORDERS(order_id),
+    PRIMARY KEY (order_id, seat_row, seat_number),
+    FOREIGN KEY (order_id) REFERENCES ORDERS(order_id),
     FOREIGN KEY (seat_row, seat_number) REFERENCES SEATS(row, seat_number)
-)
-
+);
 
 CREATE TABLE TICKET_PURCHASES (
     attendee INT,
-    order INT,
+    order_id INT,
     qr_code_value VARCHAR(50),
     ticket_status VARCHAR(50),
     FOREIGN KEY (attendee) REFERENCES ATTENDEES(user_id),
-    FOREIGN KEY (order) REFERENCES GENERATES(order_id)
-)
+    FOREIGN KEY (order_id) REFERENCES ORDERS(order_id)
+);
