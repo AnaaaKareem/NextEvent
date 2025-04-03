@@ -1,190 +1,187 @@
 CREATE TABLE USER (
-    user_id INT PRIMARY KEY,
-    first_name VARCHAR(50),
-    middle_name VARCHAR(50),
-    last_name  VARCHAR(50),
-    email VARCHAR(50),
-    password VARCHAR(50),
-    phone_number VARCHAR(50)
+    user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50) NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL,
+    password VARCHAR(50) NOT NULL,
+    phone_number VARCHAR(50) NULL
 );
 
 CREATE TABLE ATTENDEES (
-    user_id INT PRIMARY KEY,
-    date_of_birth DATE,
-    address VARCHAR(50),
+    user_id INT NOT NULL PRIMARY KEY,
+    date_of_birth DATE NOT NULL,
+    address VARCHAR(50) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id)
 );
 
 CREATE TABLE PICKS (
-    user INT PRIMARY KEY,
-    itinerary INT,
-    FOREIGN KEY (user) REFERENCES USER(user_id),
+    user_id INT NOT NULL,
+    itinerary INT NOT NULL,
+    PRIMARY KEY (user_id, itinerary),
+    FOREIGN KEY (user_id) REFERENCES ATTENDEES(user_id),
     FOREIGN KEY (itinerary) REFERENCES ITINERARIES(itineraries_id)
 );
 
 CREATE TABLE ORGANIZERS (
-    user_id INT PRIMARY KEY,
+    user_id INT NOT NULL PRIMARY KEY,
     FOREIGN KEY (user_id) REFERENCES USER(user_id)
 );
 
 CREATE TABLE MANAGER (
-    manager_id INT PRIMARY KEY,
-    user_id INT,
+    manager_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id)
 );
 
 CREATE TABLE VENDOR (
-    vendor_id INT PRIMARY KEY,
-    user_id INT,
-    manager INT,
+    vendor_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    manager INT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id),
     FOREIGN KEY (manager) REFERENCES MANAGER(manager_id)
 );
 
 CREATE TABLE ANALYST (
-    analyst_id INT PRIMARY KEY,
-    user_id INT,
-    manager INT,
+    analyst_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    manager INT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id),
     FOREIGN KEY (manager) REFERENCES MANAGER(manager_id)
 );
 
 CREATE TABLE CHECK_IN_STAFF (
-    staff_id INT PRIMARY KEY,
-    user_id INT,
-    manager INT,
+    staff_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    manager INT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id),
     FOREIGN KEY (manager) REFERENCES MANAGER(manager_id)
 );
 
 CREATE TABLE EVENTS (
-    event_id INT PRIMARY KEY,
-    manager INT,
-    event_name VARCHAR(50),
-    event_type VARCHAR(50),
-    description VARCHAR(50),
-    location VARCHAR(50),
-    status VARCHAR(50),
-    budget REAL,
-    start_date DATE,
-    end_date DATE,
+    event_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    manager INT NOT NULL,
+    event_name VARCHAR(50) NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    description VARCHAR(50) NOT NULL,
+    location VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    budget REAL NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
     FOREIGN KEY (manager) REFERENCES MANAGER(manager_id)
 );
 
 CREATE TABLE EVENT_IMAGES (
-    image_id INT PRIMARY KEY,
-    event INT,
-    image VARCHAR(50),
+    image_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    event INT NOT NULL,
+    image VARCHAR(50) NOT NULL,
     FOREIGN KEY (event) REFERENCES EVENTS(event_id)
 );
 
 CREATE TABLE TICKETS (
-    ticket_id INT PRIMARY KEY,
-    price REAL,
-    discount REAL,
-    status VARCHAR(50)
+    ticket_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    venue INT NOT NULL,
+    seat_column VARCHAR(1) NOT NULL,
+    seat_row INT NOT NULL,
+    price REAL NOT NULL,
+    discount REAL NULL,
+    status VARCHAR(50) NOT NULL,
+    FOREIGN KEY (seat_column, seat_row, venue) REFERENCES SEATS(seat_column, seat_row, venue)
 );
 
 CREATE TABLE BASKET (
-    basket_id INT PRIMARY KEY,
-    attendee INT,
-    total_price REAL,
+    basket_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    attendee INT NOT NULL,
     FOREIGN KEY (attendee) REFERENCES ATTENDEES(user_id)
 );
 
 CREATE TABLE TICKET_BASKET (
-    ticket INT PRIMARY KEY,
-    seat_row VARCHAR(2),
-    seat_number INT,
-    basket INT,
-    quantity INT,
-    time_added TIME,
-    status VARCHAR(50),
-    FOREIGN KEY (basket) REFERENCES BASKET(basket_id),
+    ticket INT NOT NULL,
+    basket INT NOT NULL,
+    quantity INT NOT NULL,
+    time_added TIME NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    PRIMARY KEY (ticket, basket),
     FOREIGN KEY (ticket) REFERENCES TICKETS(ticket_id),
-    FOREIGN KEY (seat_row, seat_number) REFERENCES SEATS(row, seat_number)
+    FOREIGN KEY (basket) REFERENCES BASKET(basket_id)
 );
 
 CREATE TABLE ITINERARIES (
-    itineraries_id INT PRIMARY KEY,
-    event INT,
-    session_name VARCHAR(50),
-    session_description VARCHAR(50),
-    guests INT,
-    date DATE,
-    start_time TIME,
-    end_time TIME,
-    total_seats INT,
+    itineraries_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    event INT NOT NULL,
+    session_name VARCHAR(50) NOT NULL,
+    session_description VARCHAR(50) NOT NULL,
+    guests VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    total_seats INT NOT NULL,
     FOREIGN KEY (event) REFERENCES EVENTS(event_id)
 );
 
 CREATE TABLE VENUE (
-    venue_id INT PRIMARY KEY,
-    itinerary INT,
-    venue_location VARCHAR(25),
-    capacity INT,
+    venue_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    itinerary INT NOT NULL,
+    venue_location VARCHAR(25) NOT NULL,
+    capacity INT NOT NULL,
     FOREIGN KEY (itinerary) REFERENCES ITINERARIES(itineraries_id)
 );
 
 CREATE TABLE SEATS (
-    row INT,
-    seat_number INT,
-    venue INT,
-    availability BOOLEAN,
-    PRIMARY KEY (row, seat_number),
+    seat_column VARCHAR(1) NOT NULL,
+    seat_row INT NOT NULL,
+    venue INT NOT NULL,
+    availability BOOLEAN NOT NULL,
+    PRIMARY KEY (seat_column, seat_row, venue),
     FOREIGN KEY (venue) REFERENCES VENUE(venue_id)
 );
 
 CREATE TABLE FEEDBACK (
-    feedback_id INT PRIMARY KEY,
-    itinerary INT,
-    attendee INT,
-    rating INT,
-    comment VARCHAR(150),
+    feedback_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    itinerary INT NOT NULL,
+    attendee INT NOT NULL,
+    rating INT NOT NULL,
+    comment VARCHAR(150) NULL,
     FOREIGN KEY (itinerary) REFERENCES ITINERARIES(itineraries_id),
     FOREIGN KEY (attendee) REFERENCES ATTENDEES(user_id)
 );
 
 CREATE TABLE CREATE_TICKETS (
-    vendor INT,
-    event INT,
-    ticket INT,
+    vendor INT NOT NULL,
+    event INT NOT NULL,
+    ticket INT NOT NULL,
+    PRIMARY KEY (vendor, event, ticket),
     FOREIGN KEY (vendor) REFERENCES VENDOR(vendor_id),
     FOREIGN KEY (event) REFERENCES EVENTS(event_id),
     FOREIGN KEY (ticket) REFERENCES TICKETS(ticket_id)
 );
 
 CREATE TABLE ORDERS (
-    order_id INT PRIMARY KEY,
-    payment INT,
-    order_date DATE,
-    order_time TIME,
+    order_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    payment INT NOT NULL,
+    order_date DATE NOT NULL,
+    order_time TIME NOT NULL,
     FOREIGN KEY (payment) REFERENCES PAYMENTS(payment_id)
 );
 
 CREATE TABLE PAYMENTS (
-    payment_id INT PRIMARY KEY,
-    attendee INT,
-    payment_method VARCHAR(50),
-    status VARCHAR(50),
-    amount REAL,
+    payment_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    attendee INT NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    amount REAL NOT NULL,
     FOREIGN KEY (attendee) REFERENCES ATTENDEES(user_id)
 );
 
-CREATE TABLE GENERATES ( 
-    order_id INT,
-    seat_row VARCHAR(2),
-    seat_number INT,
-    PRIMARY KEY (order_id, seat_row, seat_number),
-    FOREIGN KEY (order_id) REFERENCES ORDERS(order_id),
-    FOREIGN KEY (seat_row, seat_number) REFERENCES SEATS(row, seat_number)
-);
-
 CREATE TABLE TICKET_PURCHASES (
-    attendee INT,
-    order_id INT,
-    qr_code_value VARCHAR(50),
-    ticket_status VARCHAR(50),
+    attendee INT NOT NULL,
+    order INT NOT NULL,
+    ticket INT NOT NULL,
+    qr_code_value VARCHAR(50) NOT NULL,
+    ticket_status VARCHAR(50) NOT NULL,
+    PRIMARY KEY (attendee, order, ticket),
     FOREIGN KEY (attendee) REFERENCES ATTENDEES(user_id),
-    FOREIGN KEY (order_id) REFERENCES ORDERS(order_id)
+    FOREIGN KEY (order) REFERENCES ORDERS(order_id),
+    FOREIGN KEY (ticket) REFERENCES TICKETS(ticket_id)
 );
