@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../widgets/booked_event_info.dart';
 
 // Create Schedule Page
 class CalendarPage extends StatefulWidget {
@@ -23,6 +24,7 @@ class _CalendarPageState extends State<CalendarPage> {
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
+            // Calendar Background
             Container(
               padding: EdgeInsets.all(16),
               margin: EdgeInsets.all(16),
@@ -37,6 +39,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                 ],
               ),
+              // Calendar
               child: TableCalendar(
                 firstDay: DateTime.utc(2020, 1, 1),
                 lastDay: DateTime.utc(2030, 12, 31),
@@ -52,9 +55,27 @@ class _CalendarPageState extends State<CalendarPage> {
                 },
               ),
             ),
+            // Divider
             Container(
                 padding: EdgeInsets.all(16),
                 child: Divider(),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('January 24, 2025', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('N event', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w100)),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(16),
+              child: EventInfo(),
             ),
           ],
         ),
