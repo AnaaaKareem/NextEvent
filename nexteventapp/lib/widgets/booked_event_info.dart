@@ -22,47 +22,47 @@ class EventInfo extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-                  // Event Name
-                  Text('Event Name', style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold)),
-                  // Event Type
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Adds padding inside the capsule
-                      decoration: BoxDecoration(
-                        color: Colors.blue, // Background color of the capsule
-                        borderRadius: BorderRadius.circular(30), // Makes it rounded like a capsule
-                      ),
-                      child: Text(
-                        'Conference',
-                        style: TextStyle(
-                          color: Colors.white, // Text color
-                          fontSize: 14, // Text size
-                        ),
-                      ),
-                    ),
-                ],
+              // Event Name
+              Text('Event Name', style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold)),
+              // Event Type
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Adds padding inside the capsule
+                decoration: BoxDecoration(
+                  color: Colors.blue, // Background color of the capsule
+                  borderRadius: BorderRadius.circular(30), // Makes it rounded like a capsule
+                ),
+                child: Text(
+                  'Conference',
+                  style: TextStyle(
+                    color: Colors.white, // Text color
+                    fontSize: 14, // Text size
+                  ),
+                ),
+              ),
+            ],
           ),
           // Event Location, Venue, Date, Time
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Location
-              Column(
+              Row(
                 children: [
                   Icon(Icons.business_rounded),
                   Text('Event Location')
                 ],
               ),
               // Venue
-              Column(
+              Row(
                 children: [
                   Icon(Icons.meeting_room_rounded),
                   Text('Event Venue')
                 ],
               ),
               // Dates
-              Column(
+              Row(
                 children: [
                   Icon(Icons.calendar_today_rounded),
                   Text('Event Date')
@@ -70,7 +70,7 @@ class EventInfo extends StatelessWidget {
               ),
               // Time
               // Dates
-              Column(
+              Row(
                 children: [
                   Icon(Icons.access_time),
                   Text('Event Time(s)')
