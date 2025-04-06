@@ -57,8 +57,8 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
             // Divider
             Container(
-                padding: EdgeInsets.all(16),
-                child: Divider(),
+              padding: EdgeInsets.all(16),
+              child: Divider(),
             ),
             Align(
               alignment: Alignment.centerLeft,
@@ -73,9 +73,11 @@ class _CalendarPageState extends State<CalendarPage> {
                 ),
               ),
             ),
-            Container(
-              padding: EdgeInsets.all(16),
-              child: EventInfo(),
+            // Make EventInfo scrollable
+            Expanded(
+              child: SingleChildScrollView(
+                child: EventInfo(),
+              ),
             ),
           ],
         ),
