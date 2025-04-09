@@ -43,248 +43,246 @@ class _EventManagerState extends State<EventManager> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView( // Add scroll if needed
-        padding: EdgeInsets.all(10),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(10),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text('Basic Information'),
-            ),
+            const Text('Basic Information'),
             Row(
               children: [
-                Column(
-                  children: [
-                    Text('Event Name'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Event Name",
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('Event Type'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: DropdownMenu(
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry(value: 'music', label: 'Music'),
-                            DropdownMenuEntry(value: 'tech', label: 'Technology'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildTextFieldColumn('Event Name', 'Event Name'),
+                _buildDropdownColumn('Event Type', [
+                  DropdownMenuEntry(value: 'music', label: 'Music'),
+                  DropdownMenuEntry(value: 'tech', label: 'Technology'),
+                ]),
               ],
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text('Venue'),
-            ),
+            const Text('Venue'),
             Row(
               children: [
-                Column(
-                  children: [
-                    Text('Location'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Location",
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('Capacity'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Capacity",
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildTextFieldColumn('Location', 'Location'),
+                _buildTextFieldColumn('Capacity', 'Capacity'),
               ],
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text('Date & Time'),
-            ),
+            const Text('Date & Time'),
             Row(
               children: [
-                Column(
-                  children: [
-                    Text('Date'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: TextField(
-                          controller: datepicker,
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            hintText: "Pick a Date",
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.calendar_today),
-                          ),
-                          onTap: () => _selectDate(context),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('Time'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: TextField(
-                          controller: timepicker,
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            hintText: "Pick a Time",
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.access_time),
-                          ),
-                          onTap: () => _selectTime(context),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildDatePickerField('Date', datepicker, () => _selectDate(context)),
+                _buildDatePickerField('Time', timepicker, () => _selectTime(context)),
               ],
             ),
             Row(
               children: [
-                Column(
-                  children: [
-                    Text('Vendors'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: DropdownMenu(
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry(value: 'vendor1', label: 'Abdul'),
-                            DropdownMenuEntry(value: 'vendor2', label: 'Seif'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('Analyst'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: DropdownMenu(
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry(value: 'analyst1', label: 'Analyst Name'),
-                            DropdownMenuEntry(value: 'analyst2', label: 'Analyst Name'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildDropdownColumn('Vendors', [
+                  DropdownMenuEntry(value: 'vendor1', label: 'Abdul'),
+                  DropdownMenuEntry(value: 'vendor2', label: 'Seif'),
+                ]),
+                _buildDropdownColumn('Analyst', [
+                  DropdownMenuEntry(value: 'analyst1', label: 'Analyst Name'),
+                  DropdownMenuEntry(value: 'analyst2', label: 'Analyst Name'),
+                ]),
               ],
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text('Team Assignment'),
-            ),
+            const Text('Team Assignment'),
             Row(
               children: [
-                Column(
-                  children: [
-                    Text('Vendors'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: DropdownMenu(
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry(value: 'vendor1', label: 'Vendor_Name'),
-                            DropdownMenuEntry(value: 'vendor2', label: 'Vendor_Name'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Text('Analyst'),
-                    Padding(
-                      padding: EdgeInsets.all(5.0),
-                      child: SizedBox(
-                        width: 300.0,
-                        child: DropdownMenu(
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry(value: 'analyst1', label: 'Kareem'),
-                            DropdownMenuEntry(value: 'analyst2', label: 'Omar'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _buildDropdownColumn('Vendors', [
+                  DropdownMenuEntry(value: 'vendor1', label: 'Vendor_Name'),
+                  DropdownMenuEntry(value: 'vendor2', label: 'Vendor_Name'),
+                ]),
+                _buildDropdownColumn('Analyst', [
+                  DropdownMenuEntry(value: 'analyst1', label: 'Kareem'),
+                  DropdownMenuEntry(value: 'analyst2', label: 'Omar'),
+                ]),
               ],
             ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                    ),
-                    onPressed: () {},
-                    child: Text('Cancel'),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
                   ),
-                  SizedBox(width: 10),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {},
-                    child: Text('Create'),
+                  onPressed: () {},
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
                   ),
-                ],
+                  onPressed: () {},
+                  child: const Text('Create'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextFieldColumn(String label, String hint) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Column(
+        children: [
+          Text(label),
+          SizedBox(
+            width: 300.0,
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: hint,
+                border: const OutlineInputBorder(),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownColumn(String label, List<DropdownMenuEntry> entries) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Column(
+        children: [
+          Text(label),
+          SizedBox(
+            width: 300.0,
+            child: DropdownMenu(dropdownMenuEntries: entries),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDatePickerField(String label, TextEditingController controller, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Column(
+        children: [
+          Text(label),
+          SizedBox(
+            width: 300.0,
+            child: TextField(
+              controller: controller,
+              readOnly: true,
+              decoration: InputDecoration(
+                hintText: "Pick a $label",
+                border: const OutlineInputBorder(),
+                suffixIcon: Icon(label == "Date" ? Icons.calendar_today : Icons.access_time),
+              ),
+              onTap: onTap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class Vendor extends StatelessWidget {
+  const Vendor({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Ticket Management', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 5),
+            const Text('Create and manage your event tickets'),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                SizedBox(
+                  width: 200,
+                  height: 100,
+                  child: Card(
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.money),
+                          const SizedBox(width: 8),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text('Revenue'),
+                              Text('\$12345'),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 200,
+                  height: 100,
+                  child: Card(
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.money),
+                          const SizedBox(width: 8),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text('Total Sold'),
+                              Text('1234'),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            DataTable(
+              columns: const [
+                DataColumn(label: Text('Event', style: TextStyle(fontStyle: FontStyle.italic))),
+                DataColumn(label: Text('Price', style: TextStyle(fontStyle: FontStyle.italic))),
+                DataColumn(label: Text('Amount Sold', style: TextStyle(fontStyle: FontStyle.italic))),
+                DataColumn(label: Text('Settings', style: TextStyle(fontStyle: FontStyle.italic))),
+              ],
+              rows: const [
+                DataRow(cells: [
+                  DataCell(Text('Concert A')),
+                  DataCell(Text('\$25')),
+                  DataCell(Text('150')),
+                  DataCell(Icon(Icons.settings)),
+                ]),
+                DataRow(cells: [
+                  DataCell(Text('Festival B')),
+                  DataCell(Text('\$40')),
+                  DataCell(Text('300')),
+                  DataCell(Icon(Icons.settings)),
+                ]),
+                DataRow(cells: [
+                  DataCell(Text('Seminar C')),
+                  DataCell(Text('\$10')),
+                  DataCell(Text('75')),
+                  DataCell(Icon(Icons.settings)),
+                ]),
+                DataRow(cells: [
+                  DataCell(Text('Seminar C')),
+                  DataCell(Text('\$10')),
+                  DataCell(Text('75')),
+                  DataCell(Icon(Icons.settings)),
+                ]),
+              ],
             ),
           ],
         ),
