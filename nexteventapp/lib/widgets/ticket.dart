@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class Ticket extends StatelessWidget {
+  const Ticket({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class Ticket extends StatelessWidget {
             QrImageView(data: 'https://findtheinvisiblecow.com/',
             version: QrVersions.auto,
             size: 300.0),
-            Container(
+            SizedBox(
               width: 280,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

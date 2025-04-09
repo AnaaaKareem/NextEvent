@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
-class TicketCard extends StatelessWidget {
+class EventCard extends StatelessWidget {
+  const EventCard({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(25),
       margin: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,

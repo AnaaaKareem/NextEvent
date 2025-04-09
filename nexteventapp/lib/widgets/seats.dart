@@ -4,12 +4,11 @@ class Seats extends StatelessWidget {
   final int rows = 5;
   final int cols = 8;
 
+  const Seats({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Seat Selection'),
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(16),
