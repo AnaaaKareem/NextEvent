@@ -4,13 +4,15 @@ import '../widgets/booked_event_info.dart';
 
 // Create Schedule Page
 class CalendarPage extends StatefulWidget {
+  const CalendarPage({super.key});
+
 
   // Create page state
   @override
-  _CalendarPageState createState() => _CalendarPageState();
+  CalendarPageState createState() => CalendarPageState();
 }
 
-class _CalendarPageState extends State<CalendarPage> {
+class CalendarPageState extends State<CalendarPage> {
 
   // Set default variables for calendar
   DateTime _focusedDay = DateTime.now();
