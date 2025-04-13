@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../screens/event_details_page.dart';
+// import '../screens/DashboardPage.dart';
 
-class EventCard extends StatelessWidget {
-  const EventCard({super.key}); // Constructor with key
+class TicketCard extends StatelessWidget {
+  const TicketCard({super.key}); // Constructor with key
 
   @override
   Widget build(BuildContext context) {
@@ -87,14 +88,14 @@ class EventCard extends StatelessWidget {
               Text(
                 '£168',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.blueAccent,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2563EB),
                 ),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: Color(0xFF2B43E1),
                 ),
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context)=>EventDetailsPage()),);

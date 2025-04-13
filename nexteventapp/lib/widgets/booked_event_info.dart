@@ -34,18 +34,19 @@ class EventInfo extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Adds padding inside the capsule
                 decoration: BoxDecoration(
-                  color: Colors.blue, // Background color of the capsule
-                  borderRadius: BorderRadius.circular(30), // Makes it rounded like a capsule
+                    color: Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(100), // Makes it rounded like a capsule
                 ),
                 child: Text(
                   'Conference',
                   style: TextStyle(
-                    color: Colors.white, // Text color
+                    color: Colors.blue.shade700,
                     fontSize: 14, // Text size
                   ),
                 ),
               ),
             ],
+
           ),
           // Event Location, Venue, Date, Time
           Row(
@@ -80,13 +81,15 @@ class EventInfo extends StatelessWidget {
                   Text('Event Time(s)')
                 ],
               ),
+              SizedBox(height: 80,),
+
             ],
           ),
           Row(
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Event Description'),
+                child: Text('Annual technology conference featuring keynote speakers, workshops, and networking opportunities.'),
               ),
             ],
           ),
