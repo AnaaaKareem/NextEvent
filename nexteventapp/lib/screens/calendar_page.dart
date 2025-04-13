@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../widgets/booked_event_info.dart';
+import '../../widgets/booked_event_info.dart';
 
 // Create Schedule Page
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
-
 
   // Create page state
   @override
@@ -13,7 +12,6 @@ class CalendarPage extends StatefulWidget {
 }
 
 class CalendarPageState extends State<CalendarPage> {
-
   // Set default variables for calendar
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
@@ -22,7 +20,7 @@ class CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Calendar')),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
@@ -69,14 +67,19 @@ class CalendarPageState extends State<CalendarPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('January 24, 2025', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('N event', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w100)),
+                    Text('January 24, 2025',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('N event',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w100)),
                   ],
                 ),
               ),
             ),
-            // Make EventInfo scrollable
-            Expanded(
+            // Fixed height to avoid Expanded inside scroll
+            Container(
+              height: 300, // You can adjust this height as needed
               child: SingleChildScrollView(
                 child: EventInfo(),
               ),
