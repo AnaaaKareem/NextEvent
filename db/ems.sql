@@ -1,57 +1,44 @@
--- USERS
-CREATE TABLE USERS (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS USERS (
+    user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
-    middle_name VARCHAR(50),
+    middle_name VARCHAR(50) NULL,
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(50) NOT NULL,
-    phone_number VARCHAR(50),
+    phone_number VARCHAR(50) NULL,
     user_type VARCHAR(25) NOT NULL,
     CHECK (user_type IN ('attendee', 'organizer', 'check_in_staff'))
 );
 
--- ATTENDEES
-CREATE TABLE ATTENDEES (
-    attendee_id INT PRIMARY KEY,
-    user_id INT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS ATTENDEES (
+    attendee_id INT NOT NULL PRIMARY KEY,
+    user_id INT NOT NULL,
     date_of_birth DATE NOT NULL,
     address VARCHAR(50) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );
 
--- ORGANIZERS
-CREATE TABLE ORGANIZERS (
-    organizer_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS ORGANIZERS (
+    organizer_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 );
 
--- CHECK_IN_STAFF
-CREATE TABLE CHECK_IN_STAFF (
-    staff_id INT AUTO_INCREMENT PRIMARY KEY,
-    organizer_id INT NOT NULL,
-    user_id INT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS CHECK_IN_STAFF (
+    staff_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    organizer_id INT NULL,
+    user_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USERS(user_id),
     FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id)
 );
 
--- ORG_CIS
-CREATE TABLE ORG_CIS (
-    organizer_id INT NOT NULL,
-    staff_id INT NOT NULL,
-    FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id),
-    FOREIGN KEY (staff_id) REFERENCES CHECK_IN_STAFF(staff_id)
-);
-
--- EVENTS
-CREATE TABLE EVENTS (
-    event_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS EVENTS (
+    event_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     organizer_id INT NOT NULL,
     event_name VARCHAR(50) NOT NULL,
     event_type VARCHAR(50) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    location VARCHAR(255) NOT NULL,
+    description VARCHAR(50) NOT NULL,
+    location VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL,
     budget REAL NOT NULL,
     start_date DATE NOT NULL,
@@ -59,106 +46,101 @@ CREATE TABLE EVENTS (
     FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id)
 );
 
--- EVENT_IMAGES
-CREATE TABLE EVENT_IMAGES (
-    image_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS EVENT_IMAGES (
+    image_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     event_id INT NOT NULL,
     image VARCHAR(50) NOT NULL,
     FOREIGN KEY (event_id) REFERENCES EVENTS(event_id)
 );
 
--- ITINERARIES (updated: no start_time or end_time)
-CREATE TABLE ITINERARIES (
-    itinerary_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS BASKET (
+    basket_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    attendee_id INT NOT NULL,
+    FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id)
+);
+
+CREATE TABLE IF NOT EXISTS ITINERARIES (
+    itinerary_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     event_id INT NOT NULL,
     session_name VARCHAR(50) NOT NULL,
     session_description VARCHAR(50) NOT NULL,
     guest VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    total_seats INT NOT NULL,
     FOREIGN KEY (event_id) REFERENCES EVENTS(event_id)
 );
 
--- VENUES
-CREATE TABLE VENUES (
-    venue_id INT AUTO_INCREMENT PRIMARY KEY,
-    venue_location VARCHAR(25) NOT NULL,
-    capacity INT NOT NULL
-);
-
--- VENUE_BOOKINGS (now handles timing)
-CREATE TABLE VENUE_BOOKINGS (
-    booking_id INT AUTO_INCREMENT PRIMARY KEY,
-    venue_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS PICKS (
+    attendee_id INT NOT NULL,
     itinerary_id INT NOT NULL,
-    start_time DATETIME NOT NULL,
-    end_time DATETIME NOT NULL,
-    FOREIGN KEY (venue_id) REFERENCES VENUES(venue_id),
-    FOREIGN KEY (itinerary_id) REFERENCES ITINERARIES(itinerary_id),
-    CHECK (start_time < end_time)
+    PRIMARY KEY (attendee_id, itinerary_id),
+    FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id),
+    FOREIGN KEY (itinerary_id) REFERENCES ITINERARIES(itinerary_id)
 );
 
--- SEATS (updated composite key: seat_row + seat_column + venue_id)
-CREATE TABLE SEATS (
-    seat_row CHAR(1) NOT NULL,
-    seat_column INT NOT NULL,
+CREATE TABLE IF NOT EXISTS VENUES (
+    venue_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    itinerary_id INT NOT NULL,
+    venue_location VARCHAR(25) NOT NULL,
+    capacity INT NOT NULL,
+    FOREIGN KEY (itinerary_id) REFERENCES ITINERARIES(itinerary_id)
+);
+
+CREATE TABLE IF NOT EXISTS SEATS (
+    seat_column VARCHAR(1) NOT NULL,
+    seat_row INT NOT NULL,
     venue_id INT NOT NULL,
-    booking_id INT,
-    PRIMARY KEY (seat_row, seat_column, venue_id),
-    FOREIGN KEY (venue_id) REFERENCES VENUES(venue_id),
-    FOREIGN KEY (booking_id) REFERENCES VENUE_BOOKINGS(booking_id)
+    availability BOOLEAN NOT NULL,
+    PRIMARY KEY (seat_column, seat_row, venue_id),
+    FOREIGN KEY (venue_id) REFERENCES VENUES(venue_id)
 );
 
--- TICKETS
-CREATE TABLE TICKETS (
-    ticket_id INT AUTO_INCREMENT PRIMARY KEY,
-    booking_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS TICKETS (
+    ticket_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    venue_id INT NOT NULL,
+    seat_column VARCHAR(1) NOT NULL,
+    seat_row INT NOT NULL,
     price REAL NOT NULL,
     discount REAL NOT NULL DEFAULT 0,
     status VARCHAR(50) NOT NULL,
-    FOREIGN KEY (booking_id) REFERENCES VENUE_BOOKINGS(booking_id)
+    FOREIGN KEY (seat_column, seat_row, venue_id) REFERENCES SEATS(seat_column, seat_row, venue_id)
 );
 
--- BASKET
-CREATE TABLE BASKET (
-    basket_id INT AUTO_INCREMENT PRIMARY KEY,
-    attendee_id INT NOT NULL,
-    FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id)
-);
-
--- TICKET_BASKET
-CREATE TABLE TICKET_BASKET (
+CREATE TABLE IF NOT EXISTS TICKET_BASKET (
     ticket_id INT NOT NULL,
     basket_id INT NOT NULL,
     quantity INT NOT NULL,
     time_added TIME NOT NULL,
+    status VARCHAR(50) NOT NULL,
     PRIMARY KEY (ticket_id, basket_id),
     FOREIGN KEY (ticket_id) REFERENCES TICKETS(ticket_id),
     FOREIGN KEY (basket_id) REFERENCES BASKET(basket_id)
 );
 
--- FEEDBACK
-CREATE TABLE FEEDBACK (
-    feedback_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS FEEDBACK (
+    feedback_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     itinerary_id INT NOT NULL,
     attendee_id INT NOT NULL,
     rating INT NOT NULL,
-    comment VARCHAR(150),
+    comment VARCHAR(150) NULL,
     FOREIGN KEY (itinerary_id) REFERENCES ITINERARIES(itinerary_id),
     FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id)
 );
 
--- MANAGE_TICKETS
-CREATE TABLE MANAGE_TICKETS (
+CREATE TABLE IF NOT EXISTS MANAGE_TICKETS (
     organizer_id INT NOT NULL,
+    event_id INT NOT NULL,
     ticket_id INT NOT NULL,
-    PRIMARY KEY (organizer_id, ticket_id),
+    PRIMARY KEY (organizer_id, event_id, ticket_id),
     FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id),
+    FOREIGN KEY (event_id) REFERENCES EVENTS(event_id),
     FOREIGN KEY (ticket_id) REFERENCES TICKETS(ticket_id)
 );
 
--- PAYMENTS
-CREATE TABLE PAYMENTS (
-    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS PAYMENTS (
+    payment_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     attendee_id INT NOT NULL,
     payment_method VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL,
@@ -166,17 +148,15 @@ CREATE TABLE PAYMENTS (
     FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id)
 );
 
--- ORDERS
-CREATE TABLE ORDERS (
-    order_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS ORDERS (
+    order_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     payment_id INT NOT NULL,
     order_date DATE NOT NULL,
     order_time TIME NOT NULL,
     FOREIGN KEY (payment_id) REFERENCES PAYMENTS(payment_id)
 );
 
--- TICKET_PURCHASES
-CREATE TABLE TICKET_PURCHASES (
+CREATE TABLE IF NOT EXISTS TICKET_PURCHASES (
     attendee_id INT NOT NULL,
     order_id INT NOT NULL,
     ticket_id INT NOT NULL,
