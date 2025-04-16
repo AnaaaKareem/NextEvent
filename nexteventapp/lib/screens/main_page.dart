@@ -100,7 +100,12 @@ class MainPageState extends State<MainPage> {
               shrinkWrap: true,
               children: [
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EventStorePage()),
+                    );
+                  },
                   child: Stack(
                     children: [
                       Container(
@@ -154,7 +159,12 @@ class MainPageState extends State<MainPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CalendarPage()),
+                    );
+                  },
                   child: Stack(
                     children: [
                       Container(
@@ -204,7 +214,12 @@ class MainPageState extends State<MainPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TicketsPage()),
+                    );
+                  },
                   child: Stack(
                     children: [
                       Container(
@@ -254,7 +269,12 @@ class MainPageState extends State<MainPage> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FeedbackPage()),
+                    );
+                  },
                   child: Stack(
                     children: [
                       Container(
