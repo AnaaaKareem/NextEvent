@@ -45,11 +45,11 @@ CREATE TABLE IF NOT EXISTS EVENTS (
     event_type VARCHAR(50) NOT NULL,
     description VARCHAR(50) NOT NULL,
     location VARCHAR(50) NOT NULL,
-    status VARCHAR(50) NOT NULL,
     budget REAL NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id)
+    FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id),
+    CHECK (event_type IN ('conference', 'workshop', 'concert', 'festival')),
 );
 
 CREATE TABLE IF NOT EXISTS EVENT_IMAGES (
@@ -110,13 +110,13 @@ CREATE TABLE IF NOT EXISTS TICKETS (
     discount REAL NOT NULL DEFAULT 0,
     status VARCHAR(50) NOT NULL,
     FOREIGN KEY (seat_column, seat_row, venue_id) REFERENCES SEATS(seat_column, seat_row, venue_id)
+    CHECK (status IN ('for sale', 'booked'))
 );
 
 CREATE TABLE IF NOT EXISTS TICKET_BASKET (
     ticket_id INT NOT NULL,
     basket_id INT NOT NULL,
     time_added TIME NOT NULL,
-    status VARCHAR(50) NOT NULL,
     PRIMARY KEY (ticket_id, basket_id),
     FOREIGN KEY (ticket_id) REFERENCES TICKETS(ticket_id),
     FOREIGN KEY (basket_id) REFERENCES BASKET(basket_id)
@@ -148,7 +148,8 @@ CREATE TABLE IF NOT EXISTS PAYMENTS (
     payment_method VARCHAR(50) NOT NULL,
     status VARCHAR(50) NOT NULL,
     amount REAL NOT NULL,
-    FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id)
+    FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id),
+    CHECK (status IN ('failed', 'successful'))
 );
 
 CREATE TABLE IF NOT EXISTS ORDERS (
@@ -168,5 +169,6 @@ CREATE TABLE IF NOT EXISTS TICKET_PURCHASES (
     PRIMARY KEY (attendee_id, order_id, ticket_id),
     FOREIGN KEY (attendee_id) REFERENCES ATTENDEES(attendee_id),
     FOREIGN KEY (order_id) REFERENCES ORDERS(order_id),
-    FOREIGN KEY (ticket_id) REFERENCES TICKETS(ticket_id)
+    FOREIGN KEY (ticket_id) REFERENCES TICKETS(ticket_id),
+    CHECK (ticket_status IN ('not scanned', 'scanned'))
 );
