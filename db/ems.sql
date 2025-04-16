@@ -26,10 +26,16 @@ CREATE TABLE IF NOT EXISTS ORGANIZERS (
 
 CREATE TABLE IF NOT EXISTS CHECK_IN_STAFF (
     staff_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    organizer_id INT NULL,
     user_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id),
-    FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id)
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS ORG_STAFF (
+    organizer_id  INT NOT NULL,
+    staff_id      INT NOT NULL,
+    PRIMARY KEY (organizer_id, staff_id),
+    FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id),
+    FOREIGN KEY (staff_id)     REFERENCES CHECK_IN_STAFF(staff_id)
 );
 
 CREATE TABLE IF NOT EXISTS EVENTS (
@@ -68,7 +74,6 @@ CREATE TABLE IF NOT EXISTS ITINERARIES (
     date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    total_seats INT NOT NULL,
     FOREIGN KEY (event_id) REFERENCES EVENTS(event_id)
 );
 
@@ -84,7 +89,6 @@ CREATE TABLE IF NOT EXISTS VENUES (
     venue_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     itinerary_id INT NOT NULL,
     venue_location VARCHAR(25) NOT NULL,
-    capacity INT NOT NULL,
     FOREIGN KEY (itinerary_id) REFERENCES ITINERARIES(itinerary_id)
 );
 
@@ -111,7 +115,6 @@ CREATE TABLE IF NOT EXISTS TICKETS (
 CREATE TABLE IF NOT EXISTS TICKET_BASKET (
     ticket_id INT NOT NULL,
     basket_id INT NOT NULL,
-    quantity INT NOT NULL,
     time_added TIME NOT NULL,
     status VARCHAR(50) NOT NULL,
     PRIMARY KEY (ticket_id, basket_id),
