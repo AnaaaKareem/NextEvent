@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS EVENTS (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     FOREIGN KEY (organizer_id) REFERENCES ORGANIZERS(organizer_id),
-    CHECK (event_type IN ('conference', 'workshop', 'concert', 'festival')),
+    CHECK (event_type IN ('conference', 'workshop', 'concert', 'festival'))
 );
 
 CREATE TABLE IF NOT EXISTS EVENT_IMAGES (
@@ -87,9 +87,9 @@ CREATE TABLE IF NOT EXISTS PICKS (
 
 CREATE TABLE IF NOT EXISTS VENUES (
     venue_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    itinerary_id INT NOT NULL,
+    event_id INT NOT NULL,
     venue_location VARCHAR(25) NOT NULL,
-    FOREIGN KEY (itinerary_id) REFERENCES ITINERARIES(itinerary_id)
+    FOREIGN KEY (event_id) REFERENCES EVENTS(event_id)
 );
 
 CREATE TABLE IF NOT EXISTS SEATS (
