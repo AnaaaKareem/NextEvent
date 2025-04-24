@@ -1,91 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import '../../widgets/booked_event_info.dart';
+import '../services/api_service.dart';
+import '../models/event.dart';
 
-// Create Schedule Page
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
-  // Create page state
   @override
-  CalendarPageState createState() => CalendarPageState();
+  State<CalendarPage> createState() => _CalendarPageState();
 }
 
-class CalendarPageState extends State<CalendarPage> {
-  // Set default variables for calendar
+class _CalendarPageState extends State<CalendarPage> {
+  final ApiService _apiService = ApiService();
+  CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  Map<DateTime, List<Event>> _eventsByDate = {};
+  List<Event> _selectedEvents = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEvents();
+  }
+
+  Future<void> _loadEvents() async {
+    final events = await _apiService.fetchUserTickets();
+
+    Map<DateTime, List<Event>> mapped = {};
+
+    for (var ticket in events) {
+      try {
+        final dateStr = ticket['date'] as String;
+        final dateOnly = DateTime.parse(dateStr.split("T").first);
+        final normalized = DateTime.utc(dateOnly.year, dateOnly.month, dateOnly.day);
+
+        final event = Event(
+  id: ticket['event_id'],
+  name: ticket['title'],
+  description: '',
+  location: '',
+  budget: 0.0,
+  startDate: dateStr,
+  endDate: dateStr,
+  organizerId: 0, // or a proper value if you have it
+  type: 'conference', // or another valid type from your enum
+  status: 'upcoming', // or from your status enum
+);
+
+
+        mapped[normalized] = [...(mapped[normalized] ?? []), event];
+      } catch (e) {
+        print("❌ Error parsing ticket date: ${ticket['date']} - $e");
+      }
+    }
+
+    setState(() {
+      _eventsByDate = mapped;
+      _selectedEvents = _getEventsForDay(_focusedDay);
+    });
+  }
+
+  List<Event> _getEventsForDay(DateTime day) {
+    final normalized = DateTime.utc(day.year, day.month, day.day);
+    return _eventsByDate[normalized] ?? [];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Calendar')),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            // Calendar Background
-            Container(
-              padding: EdgeInsets.all(16),
-              margin: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade300,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
+      appBar: AppBar(title: const Text('My Event Calendar')),
+      body: Column(
+        children: [
+          TableCalendar<Event>(
+            firstDay: DateTime.utc(2022, 1, 1),
+            lastDay: DateTime.utc(2100, 12, 31),
+            focusedDay: _focusedDay,
+            calendarFormat: _calendarFormat,
+            selectedDayPredicate: (day) =>
+                _selectedDay != null &&
+                day.year == _selectedDay!.year &&
+                day.month == _selectedDay!.month &&
+                day.day == _selectedDay!.day,
+            eventLoader: _getEventsForDay,
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+                _selectedEvents = _getEventsForDay(selectedDay);
+              });
+            },
+            onFormatChanged: (format) {
+              setState(() {
+                _calendarFormat = format;
+              });
+            },
+            calendarStyle: CalendarStyle(
+              markerDecoration: BoxDecoration(
+                color: Colors.blueAccent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: _selectedEvents.isEmpty
+                ? const Center(child: Text("No events this day"))
+                : ListView.builder(
+                    itemCount: _selectedEvents.length,
+                    itemBuilder: (context, index) {
+                      final event = _selectedEvents[index];
+                      return ListTile(
+                        leading: const Icon(Icons.event),
+                        title: Text(event.name),
+                        subtitle: Text("Date: ${event.startDate}"),
+                      );
+                    },
                   ),
-                ],
-              ),
-              // Calendar
-              child: TableCalendar(
-                firstDay: DateTime.utc(2020, 1, 1),
-                lastDay: DateTime.utc(2030, 12, 31),
-                focusedDay: _focusedDay,
-                selectedDayPredicate: (day) {
-                  return isSameDay(_selectedDay, day);
-                },
-                onDaySelected: (selectedDay, focusedDay) {
-                  setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
-                  });
-                },
-              ),
-            ),
-            // Divider
-            Container(
-              padding: EdgeInsets.all(16),
-              child: Divider(),
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('January 24, 2025',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('N event',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w100)),
-                  ],
-                ),
-              ),
-            ),
-            // Fixed height to avoid Expanded inside scroll
-            Container(
-              height: 300, // You can adjust this height as needed
-              child: SingleChildScrollView(
-                child: EventInfo(),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

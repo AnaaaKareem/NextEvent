@@ -1,107 +1,77 @@
 import 'package:flutter/material.dart';
+import '../models/event.dart';
 import '../screens/event_details_page.dart';
 
 class EventCard extends StatelessWidget {
-  const EventCard({super.key}); // Constructor with key
+  final Event event;
+  final VoidCallback? onPurchaseComplete; // ✅ New callback parameter
+
+  const EventCard({
+    super.key,
+    required this.event,
+    this.onPurchaseComplete, // ✅ Store callback
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      margin: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade500,
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
+    return Card(
+      margin: const EdgeInsets.all(10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-
-            height: 150,
-            width: double.infinity,
-            child: Image.asset(
-              'assets/Analytics.png',
-              fit: BoxFit.contain,
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Icon(Icons.bar_chart, size: 80, color: Colors.teal),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(event.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.calendar_month, size: 16),
+                    const SizedBox(width: 4),
+                    Text(event.startDate),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, size: 16),
+                    const SizedBox(width: 4),
+                    Text(event.location),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text("£${event.budget.toStringAsFixed(2)}", style: const TextStyle(color: Colors.blueAccent)),
+              ],
             ),
           ),
-          SizedBox(height: 8),
-
-          // Event title
-          Text(
-            'Event Name',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 6),
-
-          // Date & time row
-          Row(
-            children: [
-              Icon(Icons.calendar_today, size: 16),
-              SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  'Mar 15-17, 2025 • 9:00AM - 6:00PM',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 6),
-
-          // Location
-          Row(
-            children: [
-              Icon(Icons.location_on, size: 16),
-              SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  'Conventional Center, New York',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-
-          // Price and button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '£168',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.blueAccent,
-                ),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>EventDetailsPage()),);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EventDetailsPage(
+                        event: event,
+                        onPurchaseComplete: onPurchaseComplete, // ✅ Pass callback to details page
+                      ),
+                    ),
+                  );
                 },
-                child: Text('Book'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+                child: const Text("Book"),
               ),
-            ],
+            ),
           ),
         ],
       ),

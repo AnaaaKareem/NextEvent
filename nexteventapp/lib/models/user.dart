@@ -1,47 +1,80 @@
 class User {
   final int id;
-  final String name;
+  final String firstName;
+  final String? middleName;
+  final String lastName;
   final String email;
-  final String role;
+  final String password;
+  final String? phoneNumber;
+  final String userType;
   final String token;
 
   User({
     required this.id,
-    required this.name,
+    required this.firstName,
+    this.middleName,
+    required this.lastName,
     required this.email,
-    required this.role,
+    required this.password,
+    this.phoneNumber,
+    required this.userType,
     required this.token,
   });
 
-  // ✅ Factory Constructor to Handle Missing Fields Safely
+  // Add this getter to satisfy UI expectations
+  String get role => userType;
+
+  // Factory Constructor to parse from JSON
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: (json['userId'] ?? 0) as int, // Ensure integer
-      name: (json['name'] ?? "").toString(), // Ensure string
-      email: (json['email'] ?? "").toString(),
-      role: (json['role'] ?? "user").toString(),
-      token: (json['token'] ?? "").toString(),
+      id: json['user_id'] ?? 0,
+      firstName: json['first_name'] ?? '',
+      middleName: json['middle_name'],
+      lastName: json['last_name'] ?? '',
+      email: json['email'] ?? '',
+      password: json['password'] ?? '',
+      phoneNumber: json['phone_number'],
+      userType: json['user_type'] ?? '',
+      token: json['token'] ?? '',
     );
   }
 
-  // ✅ Convert User Object to JSON
+  // Convert to JSON
   Map<String, dynamic> toJson() {
     return {
-      "userId": id,
-      "name": name,
-      "email": email,
-      "role": role,
-      "token": token,
+      'user_id': id,
+      'first_name': firstName,
+      'middle_name': middleName,
+      'last_name': lastName,
+      'email': email,
+      'password': password,
+      'phone_number': phoneNumber,
+      'user_type': userType,
+      'token': token,
     };
   }
 
-  // ✅ Allow Modifications with Copy Method
-  User copyWith({int? id, String? name, String? email, String? role, String? token}) {
+  // CopyWith method to clone with overrides
+  User copyWith({
+    int? id,
+    String? firstName,
+    String? middleName,
+    String? lastName,
+    String? email,
+    String? password,
+    String? phoneNumber,
+    String? userType,
+    String? token,
+  }) {
     return User(
       id: id ?? this.id,
-      name: name ?? this.name,
+      firstName: firstName ?? this.firstName,
+      middleName: middleName ?? this.middleName,
+      lastName: lastName ?? this.lastName,
       email: email ?? this.email,
-      role: role ?? this.role,
+      password: password ?? this.password,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      userType: userType ?? this.userType,
       token: token ?? this.token,
     );
   }

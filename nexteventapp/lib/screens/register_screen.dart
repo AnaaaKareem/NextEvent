@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -13,16 +12,16 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  /// User Registration with role included
+  String _selectedRole = 'attendee'; // Default role
+
   Future<void> _registerUser() async {
-    final name = _nameController.text.trim();
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
+    if (!_formKey.currentState!.validate()) return;
 
     final url = Uri.parse("http://localhost:5000/api/auth/register");
 
@@ -31,29 +30,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "name": name,
-          "email": email,
-          "password": password,
-          "role": "user" // role explicitly added here
+          "first_name": _firstNameController.text.trim(),
+          "last_name": _lastNameController.text.trim(),
+          "email": _emailController.text.trim(),
+          "password": _passwordController.text.trim(),
+          "user_type": _selectedRole
         }),
       );
 
-      if (response.statusCode == 201) { // use 201 according to backend
-        print("User Registered: $email");
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
+      print("🔹 Register Response: ${response.statusCode} - ${response.body}");
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("✅ Registration successful!")),
         );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
       } else {
         final data = jsonDecode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "Registration failed")),
+          SnackBar(content: Text(data["message"] ?? "❌ Registration failed")),
         );
       }
     } catch (e) {
-      print("Error: $e");
+      print("❌ Error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Server error. Please try again.")),
+        const SnackBar(content: Text("Server error. Please try again.")),
       );
     }
   }
@@ -69,14 +70,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Expanded(
                   child: Container(
                     color: Colors.blue,
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         "Welcome to NextEvent!",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -84,64 +81,94 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Expanded(
                 flex: 2,
                 child: Center(
-                  child: SingleChildScrollView(
-                    child: Container(
-                      constraints: BoxConstraints(maxWidth: 400),
-                      padding: EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Sign Up", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 8),
-                          Text("Create your account to get started", style: TextStyle(fontSize: 16)),
-                          SizedBox(height: 24),
-                          Form(
-                            key: _formKey,
-                            child: Column(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text("Sign Up", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        const Text("Create your account to get started", style: TextStyle(fontSize: 16)),
+                        const SizedBox(height: 24),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              buildInputField(_firstNameController, "First Name", Icons.person),
+                              const SizedBox(height: 12),
+                              buildInputField(_lastNameController, "Last Name", Icons.person_outline),
+                              const SizedBox(height: 12),
+                              buildInputField(_emailController, "Email", Icons.email),
+                              const SizedBox(height: 12),
+                              buildInputField(_passwordController, "Password", Icons.lock, obscureText: true),
+                              const SizedBox(height: 12),
+                              buildInputField(_confirmPasswordController, "Confirm Password", Icons.lock_outline, obscureText: true),
+                              const SizedBox(height: 12),
+                              DropdownButtonFormField<String>(
+                                value: _selectedRole,
+                                onChanged: (val) => setState(() => _selectedRole = val!),
+                                items: const [
+                                  DropdownMenuItem(value: "attendee", child: Text("Attendee")),
+                                  DropdownMenuItem(value: "organizer", child: Text("Organizer")),
+                                  DropdownMenuItem(value: "admin", child: Text("Admin")),
+                                ],
+                                decoration: const InputDecoration(
+                                  labelText: "Role",
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                onPressed: _registerUser,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  minimumSize: const Size(double.infinity, 50),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text("Create Account", style: TextStyle(color: Colors.white, fontSize: 16)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: const [
+                            Expanded(child: Divider()),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              child: Text("or continue with"),
+                            ),
+                            Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            socialButton(FontAwesomeIcons.google, "Google", Colors.red),
+                            const SizedBox(width: 16),
+                            socialButton(FontAwesomeIcons.apple, "Apple", Colors.black),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
+                          },
+                          child: const Text.rich(
+                            TextSpan(
+                              text: "Already have an account? ",
                               children: [
-                                buildInputField(_nameController, "First Name", Icons.person),
-                                SizedBox(height: 12),
-                                buildInputField(_nameController, "Middle Name", Icons.person),
-                                SizedBox(height: 12),
-                                buildInputField(_nameController, "Last Name", Icons.person),
-                                SizedBox(height: 12),
-                                buildInputField(_emailController, "Email", Icons.email),
-                                SizedBox(height: 12),
-                                buildInputField(_passwordController, "Password", Icons.lock, obscureText: true),
-                                SizedBox(height: 12),
-                                buildInputField(_confirmPasswordController, "Confirm Password", Icons.lock, obscureText: true),
-                                SizedBox(height: 24),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (_formKey.currentState!.validate()) {
-                                      _registerUser();
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    minimumSize: Size(double.infinity, 50),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  ),
-                                  child: Text("Create Account", style: TextStyle(fontSize: 16, color: Colors.white)),
+                                TextSpan(
+                                  text: "Log in",
+                                  style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(height: 24),
-                          Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text("or continue with")), Expanded(child: Divider())]),
-                          SizedBox(height: 16),
-                          Row(mainAxisAlignment: MainAxisAlignment.center, children: [socialButton(FontAwesomeIcons.google, "Google", Colors.red), SizedBox(width: 16), socialButton(FontAwesomeIcons.apple, "Apple", Colors.black)]),
-                          SizedBox(height: 24),
-                          Center(
-                            child: GestureDetector(
-                              onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen())),
-                              child: Text.rich(
-                                TextSpan(text: "Already have an account? ", children: [TextSpan(text: "Log in", style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold))]),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -157,7 +184,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
       validator: (value) {
         if (value == null || value.isEmpty) return "$label is required";
         if (label == "Password" && value.length < 6) return "Password must be at least 6 characters";
@@ -167,5 +198,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget socialButton(IconData icon, String label, Color color) => OutlinedButton.icon(onPressed: () {}, icon: FaIcon(icon, color: color), label: Text(label), style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), minimumSize: Size(150, 50)));
+  Widget socialButton(IconData icon, String label, Color color) {
+    return OutlinedButton.icon(
+      onPressed: () {
+        print("Sign in with $label");
+      },
+      icon: FaIcon(icon, color: color),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: Colors.grey),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        minimumSize: const Size(150, 50),
+      ),
+    );
+  }
 }

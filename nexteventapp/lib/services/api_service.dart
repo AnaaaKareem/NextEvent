@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart'; // 🔹 Needed for opening Stripe URL
+import 'package:url_launcher/url_launcher.dart';
 import '../models/event.dart';
 import '../models/user.dart';
 
 class ApiService {
-  final String _baseUrl = "http://192.168.1.27:5000/api";
+  final String _baseUrl = "http://localhost:5000/api";
 
-  // 🔹 Helper: Get headers (Include Auth Token)
   Future<Map<String, String>> _getHeaders({bool includeAuth = false}) async {
     final headers = {"Content-Type": "application/json"};
     if (includeAuth) {
@@ -20,7 +19,232 @@ class ApiService {
     return headers;
   }
 
-  // 🔹 Fetch Events (All Users)
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("token");
+  }
+
+  Future<String?> getUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString("user_type");
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+
+  Future<User?> registerUser({
+    required String firstName,
+    String? middleName,
+    required String lastName,
+    required String email,
+    required String password,
+    String? phoneNumber,
+    required String userType,
+    String? dateOfBirth,
+    String? address,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$_baseUrl/auth/register"),
+        headers: await _getHeaders(),
+        body: jsonEncode({
+          "first_name": firstName.trim(),
+          "middle_name": middleName?.trim() ?? '',
+          "last_name": lastName.trim(),
+          "email": email.trim(),
+          "password": password.trim(),
+          "phone_number": phoneNumber?.trim() ?? '',
+          "user_type": userType.trim(),
+          "date_of_birth": dateOfBirth?.trim() ?? '',
+          "address": address?.trim() ?? '',
+        }),
+      );
+
+      print("🔹 Register Response: ${response.statusCode} - ${response.body}");
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        User user = User(
+          id: data['user_id'] ?? 0,
+          firstName: data['first_name'] ?? '',
+          middleName: data['middle_name'] ?? '',
+          lastName: data['last_name'] ?? '',
+          email: data['email'] ?? '',
+          password: '',
+          phoneNumber: data['phone_number'] ?? '',
+          userType: data['user_type'] ?? '',
+          token: data['token'] ?? '',
+        );
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("token", user.token);
+        await prefs.setString("user_type", user.userType);
+        await prefs.setInt("userId", user.id);
+        await prefs.setString("firstName", user.firstName);
+        await prefs.setString("lastName", user.lastName);
+        await prefs.setString("email", user.email);
+
+        return user;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print("❌ Error registering user: $e");
+      return null;
+    }
+  }
+
+  Future<User?> loginUser(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$_baseUrl/auth/login"),
+        headers: await _getHeaders(),
+        body: jsonEncode({"email": email.trim(), "password": password.trim()}),
+      );
+
+      print("🔹 Login Response: ${response.statusCode} - ${response.body}");
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final userData = data['user'];
+        User user = User(
+          id: userData['user_id'] ?? 0,
+          firstName: userData['first_name'] ?? '',
+          middleName: userData['middle_name'] ?? '',
+          lastName: userData['last_name'] ?? '',
+          email: userData['email'] ?? '',
+          password: '',
+          phoneNumber: userData['phone_number'] ?? '',
+          userType: userData['user_type'] ?? '',
+          token: data['token'] ?? '',
+        );
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("token", user.token);
+        await prefs.setString("user_type", user.userType);
+        await prefs.setInt("userId", user.id);
+        await prefs.setString("firstName", user.firstName);
+        await prefs.setString("lastName", user.lastName);
+        await prefs.setString("email", user.email);
+
+        return user;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print("❌ Error logging in: $e");
+      return null;
+    }
+  }
+
+  Future<bool> addSeatsToBasket({
+    required int eventId,
+    required List<String> selectedSeats,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$_baseUrl/basket/add-seats"),
+        headers: await _getHeaders(includeAuth: true),
+        body: jsonEncode({
+          "eventId": eventId,
+          "selectedSeats": selectedSeats,
+        }),
+      );
+
+      print("🧺 Add Seats to Basket Response: ${response.statusCode} - ${response.body}");
+      return response.statusCode == 200;
+    } catch (e) {
+      print("❌ Error adding seats to basket: $e");
+      return false;
+    }
+  }
+
+  Future<bool> removeFromBasket(int basketId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse("$_baseUrl/basket/$basketId"),
+        headers: await _getHeaders(includeAuth: true),
+      );
+
+      print("🔹 Remove from Basket Response: ${response.statusCode} - ${response.body}");
+      return response.statusCode == 200;
+    } catch (e) {
+      print("❌ Error removing from basket: $e");
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getBasket() async {
+    try {
+      final response = await http.get(
+        Uri.parse("$_baseUrl/basket"),
+        headers: await _getHeaders(includeAuth: true),
+      );
+
+      print("🔹 Get Basket Response: ${response.statusCode} - ${response.body}");
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("❌ Error getting basket: $e");
+      return [];
+    }
+  }
+
+  Future<bool> checkoutBasket(List<Map<String, dynamic>> basketItems) async {
+  if (basketItems.isEmpty) return false;
+
+  try {
+    final token = await getToken();
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId');
+    final eventId = basketItems[0]['event_id'];
+    final selectedSeats = basketItems.map((item) => item['seat'].toString()).toList();
+    final quantity = selectedSeats.length;
+
+    final response = await http.post(
+      Uri.parse("$_baseUrl/tickets/checkout"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({
+        "userId": userId,
+        "event_id": eventId,
+        "selectedSeats": selectedSeats,
+        "quantity": quantity,
+      }),
+    );
+
+    print("🧾 Checkout Response: ${response.statusCode} - ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final checkoutUrl = data['checkout_url'];
+      if (await canLaunchUrl(Uri.parse(checkoutUrl))) {
+        await launchUrl(Uri.parse(checkoutUrl), mode: LaunchMode.externalApplication);
+        return true;
+      } else {
+        print("❌ Cannot launch Stripe checkout URL");
+        return false;
+      }
+    } else {
+      return false;
+    }
+  } catch (e) {
+    print("❌ Error during checkout: $e");
+    return false;
+  }
+}
+
+
+
+
+
   Future<List<Event>> fetchEvents() async {
     try {
       final response = await http.get(
@@ -42,100 +266,47 @@ class ApiService {
     }
   }
 
-  // 🔹 Create Event (Only for Organizers/Admins)
-  Future<bool> createEvent(String title, String description, String date, String location) async {
-    if ([title, description, date, location].any((field) => field.trim().isEmpty)) {
-      print("❌ Error: Missing event details");
-      return false;
-    }
-
+  Future<Map<String, dynamic>?> fetchEventDetails(int eventId) async {
     try {
-      final response = await http.post(
-        Uri.parse("$_baseUrl/events"),
-        headers: await _getHeaders(includeAuth: true),
-        body: jsonEncode({
-          "title": title.trim(),
-          "description": description.trim(),
-          "date": date.trim(),
-          "location": location.trim(),
-        }),
-      );
-
-      print("🔹 Create Event Response: ${response.statusCode} - ${response.body}");
-
-      return response.statusCode == 201;
-    } catch (e) {
-      print("❌ Error creating event: $e");
-      return false;
-    }
-  }
-
-  // 🔹 Delete Event (Admin Only)
-  Future<bool> deleteEvent(int eventId) async {
-    try {
-      final response = await http.delete(
+      final response = await http.get(
         Uri.parse("$_baseUrl/events/$eventId"),
         headers: await _getHeaders(includeAuth: true),
       );
 
-      print("🔹 Delete Event Response: ${response.statusCode} - ${response.body}");
-
-      return response.statusCode == 200;
-    } catch (e) {
-      print("❌ Error deleting event: $e");
-      return false;
-    }
-  }
-
-  // 🔹 Purchase Single Ticket (Stripe Checkout)
-  Future<bool> purchaseTicket(int eventId) async {
-    return await purchaseMultipleTickets(eventId, 1);
-  }
-
-  // 🔹 Purchase Multiple Tickets via Stripe
-  Future<bool> purchaseMultipleTickets(int eventId, int quantity) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$_baseUrl/tickets/checkout"),
-        headers: await _getHeaders(includeAuth: true),
-        body: jsonEncode({
-          "event_id": eventId,
-          "quantity": quantity, // ✅ Send quantity
-        }),
-      );
-
-      print("🔹 Purchase Tickets Response: ${response.statusCode} - ${response.body}");
+      print("🔹 Fetch Event Details Response: ${response.statusCode} - ${response.body}");
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        // ✅ Ensure checkout_url exists
-        if (!data.containsKey("checkout_url") || data["checkout_url"] == null || data["checkout_url"].toString().isEmpty) {
-          print("❌ Error: Missing checkout URL in response");
-          return false;
-        }
-
-        final String checkoutUrl = data["checkout_url"];
-        Uri url = Uri.parse(checkoutUrl);
-
-        // ✅ Open Stripe Checkout in external browser
-        if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-          print("❌ Cannot open Stripe Checkout URL");
-          return false;
-        }
-
-        return true;
+        return jsonDecode(response.body);
       } else {
-        print("❌ Failed to purchase tickets: ${response.statusCode} - ${response.body}");
-        return false;
+        return null;
       }
     } catch (e) {
-      print("❌ Error purchasing tickets: $e");
-      return false;
+      print("❌ Error fetching event details: $e");
+      return null;
     }
   }
 
-  // 🔹 Fetch User Tickets
+  Future<List<String>> fetchSeats(int eventId) async {
+  try {
+    final response = await http.get(
+      Uri.parse("$_baseUrl/events/$eventId/seats"),
+      headers: await _getHeaders(includeAuth: true),
+    );
+
+    print("🔹 Fetch Seats Response: ${response.statusCode} - ${response.body}");
+
+    if (response.statusCode == 200) {
+      return List<String>.from(jsonDecode(response.body));
+    } else {
+      return [];
+    }
+  } catch (e) {
+    print("❌ Error fetching seats: $e");
+    return [];
+  }
+}
+
+
   Future<List<Map<String, dynamic>>> fetchUserTickets() async {
     try {
       final response = await http.get(
@@ -156,89 +327,122 @@ class ApiService {
     }
   }
 
-  // 🔹 Register User (With Role Validation)
-  Future<bool> registerUser(String name, String email, String password, String role) async {
-    if ([name, email, password, role].any((field) => field.trim().isEmpty)) {
-      print("❌ Error: Missing registration fields");
-      return false;
-    }
-
+  Future<bool> createEvent({
+    required String eventName,
+    required String eventType,
+    required String description,
+    required String location,
+    required double budget,
+    required String startDate,
+    required String endDate,
+  }) async {
     try {
       final response = await http.post(
-        Uri.parse("$_baseUrl/auth/register"),
-        headers: await _getHeaders(),
+        Uri.parse("$_baseUrl/events"),
+        headers: await _getHeaders(includeAuth: true),
         body: jsonEncode({
-          "name": name.trim(),
-          "email": email.trim(),
-          "password": password.trim(),
-          "role": role.trim()
+          "event_name": eventName,
+          "event_type": eventType,
+          "description": description,
+          "location": location,
+          "budget": budget,
+          "start_date": startDate,
+          "end_date": endDate,
         }),
       );
 
-      print("🔹 Register Response: ${response.statusCode} - ${response.body}");
-
+      print("🔹 Create Event Response: ${response.statusCode} - ${response.body}");
       return response.statusCode == 201;
     } catch (e) {
-      print("❌ Error registering user: $e");
+      print("❌ Error creating event: $e");
       return false;
     }
   }
 
-  // 🔹 Login User (Stores Token & Role)
-  Future<User?> loginUser(String email, String password) async {
+  Future<bool> deleteEvent(int eventId) async {
     try {
-      final response = await http.post(
-        Uri.parse("$_baseUrl/auth/login"),
-        headers: await _getHeaders(),
-        body: jsonEncode({"email": email.trim(), "password": password.trim()}),
+      final response = await http.delete(
+        Uri.parse("$_baseUrl/events/$eventId"),
+        headers: await _getHeaders(includeAuth: true),
       );
 
-      print("🔹 Login Response: ${response.statusCode} - ${response.body}");
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-
-        User user = User(
-          id: data["userId"] ?? 0,
-          name: data["name"] ?? "Unknown",
-          email: data["email"] ?? "No Email",
-          role: data["role"] ?? "user",
-          token: data["token"] ?? "",
-        );
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("token", user.token);
-        await prefs.setString("role", user.role);
-        await prefs.setInt("userId", user.id);
-        await prefs.setString("name", user.name);
-
-        return user;
-      } else {
-        return null;
-      }
+      print("🔹 Delete Event Response: ${response.statusCode} - ${response.body}");
+      return response.statusCode == 200;
     } catch (e) {
-      print("❌ Error logging in: $e");
-      return null;
+      print("❌ Error deleting event: $e");
+      return false;
     }
   }
 
-  // 🔹 Get Stored Token
-  Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("token");
+  Future<List<Map<String, dynamic>>> fetchItineraries(int eventId) async {
+    try {
+      final response = await http.get(
+        Uri.parse("$_baseUrl/events/$eventId/itineraries"),
+        headers: await _getHeaders(includeAuth: true),
+      );
+
+      print("🔹 Fetch Itineraries Response: ${response.statusCode} - ${response.body}");
+
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("❌ Error fetching itineraries: $e");
+      return [];
+    }
   }
 
-  // 🔹 Get User Role
-  Future<String?> getUserRole() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("role");
+  Future<bool> submitFeedback(int itineraryId, int rating, String? comment) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$_baseUrl/feedback"),
+        headers: await _getHeaders(includeAuth: true),
+        body: jsonEncode({
+          "itinerary_id": itineraryId,
+          "rating": rating,
+          "comment": comment,
+        }),
+      );
+
+      print("🔹 Submit Feedback Response: ${response.statusCode} - ${response.body}");
+      return response.statusCode == 200;
+    } catch (e) {
+      print("❌ Error submitting feedback: $e");
+      return false;
+    }
   }
 
-  // 🔹 Logout (Clears stored token & role)
-  Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove("token");
-    await prefs.remove("role");
-    await prefs.remove("userId");
+  Future<bool> createItinerary({
+    required int eventId,
+    required String sessionName,
+    required String sessionDescription,
+    required String guest,
+    required String date,
+    required String startTime,
+    required String endTime,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$_baseUrl/events/$eventId/itineraries"),
+        headers: await _getHeaders(includeAuth: true),
+        body: jsonEncode({
+          "session_name": sessionName,
+          "session_description": sessionDescription,
+          "guest": guest,
+          "date": date,
+          "start_time": startTime,
+          "end_time": endTime,
+        }),
+      );
+
+      print("🔹 Create Itinerary Response: ${response.statusCode} - ${response.body}");
+      return response.statusCode == 201;
+    } catch (e) {
+      print("❌ Error creating itinerary: $e");
+      return false;
+    }
   }
 }
+

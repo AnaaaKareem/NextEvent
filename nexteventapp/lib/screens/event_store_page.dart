@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/event_card.dart';
-import '../widgets/event_filtering_menu.dart'; // Import your FilterMenu here
+import '../models/event.dart';
+import '../widgets/event_filtering_menu.dart';
+import '../services/api_service.dart';
 
 class EventStorePage extends StatefulWidget {
   @override
@@ -8,30 +10,52 @@ class EventStorePage extends StatefulWidget {
 }
 
 class _EventStorePageState extends State<EventStorePage> {
+  List<Event> events = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEvents();
+  }
+
+  Future<void> fetchEvents() async {
+    final api = ApiService();
+    final fetched = await api.fetchEvents();
+    setState(() {
+      events = fetched;
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Events')),
       body: Row(
         children: [
-          FilterMenu(), // Fixed left panel
+          FilterMenu(),
           Expanded(
-            child: Container(
-              padding: EdgeInsets.all(20),
-              child: GridView.count(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : Padding(
+              padding: const EdgeInsets.all(20),
+              child: GridView.builder(
+                itemCount: events.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  shrinkWrap: true,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  children: List.generate(12, (index) => EventCard()),
+                  childAspectRatio: 0.75,
                 ),
-
+                itemBuilder: (context, index) {
+                  return EventCard(event: events[index]);
+                },
+              ),
             ),
           ),
         ],
       ),
     );
-
-
   }
 }

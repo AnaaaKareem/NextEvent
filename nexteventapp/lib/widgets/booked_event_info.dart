@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/event.dart';
 
 class EventInfo extends StatelessWidget {
-  const EventInfo({super.key});
+  final Event event;
 
+  const EventInfo({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -22,76 +24,45 @@ class EventInfo extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // First Row Event Name and Event Type
+          // Title + Type
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Event Name
-              Text('Event Name', style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-              // Event Type
+              Text(event.name,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10), // Adds padding inside the capsule
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                  borderRadius: BorderRadius.circular(100), // Makes it rounded like a capsule
+                  color: Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(100),
                 ),
                 child: Text(
-                  'Conference',
+                  event.type,
                   style: TextStyle(
                     color: Colors.blue.shade700,
-                    fontSize: 14, // Text size
+                    fontSize: 14,
                   ),
                 ),
               ),
             ],
-
           ),
-          // Event Location, Venue, Date, Time
+          SizedBox(height: 10),
+
+          // Info rows
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Location
-              Row(
-                children: [
-                  Icon(Icons.business_rounded),
-                  Text('Event Location')
-                ],
-              ),
-              // Venue
-              Row(
-                children: [
-                  Icon(Icons.meeting_room_rounded),
-                  Text('Event Venue')
-                ],
-              ),
-              // Dates
-              Row(
-                children: [
-                  Icon(Icons.calendar_today_rounded),
-                  Text('Event Date')
-                ],
-              ),
-              // Time
-              // Dates
-              Row(
-                children: [
-                  Icon(Icons.access_time),
-                  Text('Event Time(s)')
-                ],
-              ),
-              SizedBox(height: 80,),
-
+              Row(children: [Icon(Icons.business_rounded), SizedBox(width: 5), Text(event.location)]),
+              Row(children: [Icon(Icons.calendar_today_rounded), SizedBox(width: 5), Text("${event.startDate} - ${event.endDate}")]),
+              Row(children: [Icon(Icons.access_time), SizedBox(width: 5), Text("All Day")]),
             ],
           ),
-          Row(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Annual technology conference featuring keynote speakers, workshops, and networking opportunities.'),
-              ),
-            ],
+          SizedBox(height: 10),
+
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(event.description,
+                style: TextStyle(fontWeight: FontWeight.w300)),
           ),
         ],
       ),
